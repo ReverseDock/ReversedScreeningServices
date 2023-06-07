@@ -1,0 +1,1 @@
+sudo docker compose rm -f -v -s && sudo docker volume rm application_files && sudo docker compose build && sudo docker compose up --remove-orphans --scale docking-service=4

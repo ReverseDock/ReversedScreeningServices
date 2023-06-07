@@ -1,0 +1,7 @@
+service:
+  rabbitmq: "amqp://localhost:5672"
+smtp_login: ""
+smtp_pw: ""
+smtp_server: "mailhog"
+smtp_port: 1025
+ssl: true

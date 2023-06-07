@@ -1,0 +1,6 @@
+service:
+  rabbitmq: "amqp://localhost:5672"
+pythonshpath: "/app/mgltools_bin/bin/pythonsh"
+babelpath: "obabel"
+prepareligandpath: "/app/mgltools_bin/MGLToolsPckgs/AutoDockTools/Utilities24/prepare_ligand4.py"
+preparereceptorpath: "/app/mgltools_bin/MGLToolsPckgs/AutoDockTools/Utilities24/prepare_receptor4.py"
