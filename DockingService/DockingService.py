@@ -20,7 +20,7 @@ def initialize_logging(mod_name):
     logger.setLevel(logging.DEBUG)
     return logger
 
-def createResultMessage(submission: str, receptor: str, affinity: float, outputDir: str, secondsToCompletion: int, success: bool, timeOut: bool = False):
+def createResultMessage(submission: str, receptor: str, affinity: float, outputDir: str, secondsToCompletion: int, success: bool):
     message = {
         "message": {
             "submission": submission,
@@ -28,8 +28,7 @@ def createResultMessage(submission: str, receptor: str, affinity: float, outputD
             "affinity": affinity,
             "outputPath": outputDir,
             "secondsToCompletion": secondsToCompletion,
-            "success": success,
-            "timeOut": timeOut
+            "success": success
         },
         "messageType": [
             "urn:message:AsyncAPI.Models:DockingResult"
@@ -50,20 +49,8 @@ class Worker(ConsumerProducerMixin):
     def on_message(self, body, message):
         docker = Docker(self.config)
         self.logger.info(f"Received message {body}")
-        published_at = datetime.datetime.strptime(body["publishedAt"], "%Y-%m-%dT%H:%M:%S.%fZ")
         start_time = time()
     
-        # Check that message is not older than 48 hours
-        if (datetime.datetime.utcnow() - published_at).total_seconds() > 48 * 60 * 60:
-            self.logger.info("Message is too old, discarding")
-            message.reject(requeue=False)
-            elapsed_time = math.ceil(time() - start_time)
-            result = createResultMessage(body["submissionId"], body["receptorId"], 0, "", elapsed_time, False, True)
-            self.producer.publish(
-                json.dumps(result), exchange="AsyncAPI.Models:DockingResult", retry=True
-            )
-            return
-
         try:
             affinity, outputdir = docker.runDocking(body["ligandPath"], body["receptorPath"], body["configPath"], body["exhaustiveness"])
         except Exception:
