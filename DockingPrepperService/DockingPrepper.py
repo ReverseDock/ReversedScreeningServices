@@ -36,7 +36,7 @@ class DockingPrepper():
         pythonsh = subprocess.run([self.config["babelpath"],
                                    "-imol2",
                                    fullPath,
-                                   "-p",
+                                   "-p", "7",
                                    "-O",
                                    outputPath],
                                    text=True, capture_output=True)
