@@ -50,7 +50,7 @@ class Worker(ConsumerProducerMixin):
         docker = Docker(self.config)
         self.logger.info(f"Received message {body}")
         start_time = time()
-    
+
         try:
             affinity, outputdir = docker.runDocking(body["ligandPath"], body["receptorPath"], body["configPath"], body["exhaustiveness"])
         except Exception:

@@ -47,6 +47,8 @@ class Worker(ConsumerProducerMixin):
         self.logger.info(f"Received message {body}")
         prepper = DockingPrepper(self.config)
         receptor = body["type"] == 0
+        os.makedirs("./" + body["id"], exist_ok=True)
+        os.chdir("./" + body["id"])
         copiedFile = shutil.copy(body["path"], "./")
         self.logger.debug(f"Copied '{body['path']}' to '{copiedFile}'")
         try:
@@ -62,8 +64,20 @@ class Worker(ConsumerProducerMixin):
             self.producer.publish(
                 json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
             )
+            os.chdir("../")
             return
-        movedResultFile = shutil.move(resultPath, body["path"] + "qt")
+        try:
+            self.logger.debug(f"Trying to move result from '{resultPath}' to '{body['path'] + 'qt'}'")
+            movedResultFile = shutil.move(resultPath, body["path"] + "qt")
+        except Exception as e:
+            self.logger.error(f"Failed to move result: {e}")
+            message.reject(requeue=False)
+            result = createResultMessage(body["id"], None, None)
+            self.producer.publish(
+                json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
+            )
+            os.chdir("../")
+            return
         self.logger.debug(f"Moved result from '{resultPath}' to '{body['path'] + 'qt'}'")
         os.remove(copiedFile)
         self.logger.debug(f"Removed {copiedFile}")
@@ -73,6 +87,7 @@ class Worker(ConsumerProducerMixin):
                 configPath = prepper.prepareConfig(movedResultFile)
             except Exception:
                 result = createResultMessage(body["id"], None, None)
+                message.reject(requeue=False)
                 self.producer.publish(
                     json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
                 )
@@ -82,10 +97,12 @@ class Worker(ConsumerProducerMixin):
         self.producer.publish(
             json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
         )
+        os.chdir("../")
+        os.rmdir(body["id"])
         message.ack()
 
 def setup_mq(host):
-    connection = Connection(host, heartbeat=120)
+    connection = Connection(host, heartbeat=0)
     channel = connection.channel()
     exchange = Exchange("AsyncAPI.Models:DockingPrepResult", "fanout", channel=channel)
     exchange.declare()

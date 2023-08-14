@@ -1,3 +1,4 @@
+# EXECUTE IN ROOT DIRECTORY
 version: '3.9'
 services:
   mailhog:
@@ -16,28 +17,28 @@ services:
     volumes:
       - files:/files
   docking-service:
-    build: ./DockingService
+    build: ./services/DockingService
     restart: always
     environment:
       PYTHONUNBUFFERED: 1
     volumes:
       - files:/files
   docking-prepper-service:
-    build: ./DockingPrepperService
+    build: ./services/DockingPrepperService
     restart: always
     environment:
       PYTHONUNBUFFERED: 1
     volumes:
       - files:/files
   fasta-service:
-    build: ./FASTAService
+    build: ./services/FASTAService
     restart: always
     environment:
       PYTHONUNBUFFERED: 1
     volumes:
       - files:/files
   mail-service:
-    build: ./MailService
+    build: ./services/MailService
     restart: always
     environment:
       PYTHONUNBUFFERED: 1
