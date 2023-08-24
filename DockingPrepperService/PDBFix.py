@@ -7,9 +7,13 @@ file = sys.argv[1]
 outfile = sys.argv[2]
 
 fixer = PDBFixer(filename=file)
+# delete all but the first chain
+chains = list(fixer.topology.chains())
+if len(chains) > 1:
+    fixer.removeChains([i for i in range(1,len(chains))])
+# Find missing residues
 fixer.findMissingResidues()
 # begin: Only insert missing residues in the middle
-chains = list(fixer.topology.chains())
 keys = list(fixer.missingResidues.keys())
 for key in keys:
     chain = chains[key[0]]
