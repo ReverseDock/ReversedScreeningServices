@@ -32,14 +32,21 @@ class DockingPrepper():
         log = ""
         self.logger.info(f"Creating PDBQT for ligand {fullPath}")
         path, ext = os.path.splitext(fullPath)
+        if ext.lower() != ".mol2":
+            self.logger.error(f"File {fullPath} is not a MOL2 file")
+            raise DockingPrepperException(f"File {fullPath} is not a MOL2 file")
         outputPath = path + ".pdbqt"
-        pythonsh = subprocess.run([self.config["babelpath"],
-                                   "-imol2",
-                                   fullPath,
-                                   "-p", "7",
-                                   "-O",
-                                   outputPath],
-                                   text=True, capture_output=True)
+        try:
+            pythonsh = subprocess.run([self.config["babelpath"],
+                                       "-imol2",
+                                       fullPath,
+                                       "-p", "7",
+                                       "-O",
+                                       outputPath],
+                                       text=True, capture_output=True)
+        except Exception as e:
+            self.logger.error(e)
+            raise DockingPrepperException(e)
         if pythonsh.returncode != 0:
             self.logger.error(pythonsh.stderr)
             raise DockingPrepperException(pythonsh.stderr)
@@ -57,6 +64,11 @@ class DockingPrepper():
         """
         log = ""
         path, ext = os.path.splitext(fullPath)
+        # ---------------------------------------------
+        self.logger.info(f"Checking filetype of {fullPath}")
+        if ext.lower() != ".pdb":
+            self.logger.error(f"File {fullPath} is not a PDB file")
+            raise DockingPrepperException(f"File {fullPath} is not a PDB file")
         # ---------------------------------------------
         self.logger.info(f"Remove rotamers, DNA and RNA from {fullPath}")
         noRotamersPath = path + "_no_rotamers.pdb"
