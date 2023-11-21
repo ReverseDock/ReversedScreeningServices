@@ -49,7 +49,17 @@ class Worker(ConsumerProducerMixin):
         receptor = body["type"] == 0
         os.makedirs("./" + body["id"], exist_ok=True)
         os.chdir("./" + body["id"])
-        copiedFile = shutil.copy(body["path"], "./")
+        try:
+            copiedFile = shutil.copy(body["path"], "./")
+        except IOError as e:
+            self.logger.error(f"Failed to copy file: {e}")
+            message.reject(requeue=False)
+            result = createResultMessage(body["id"], None, None)
+            self.producer.publish(
+                json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
+            )
+            os.chdir("../")
+            return
         self.logger.debug(f"Copied '{body['path']}' to '{copiedFile}'")
         try:
             if receptor:
