@@ -59,6 +59,7 @@ class Worker(ConsumerProducerMixin):
                 json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
             )
             os.chdir("../")
+            shutil.rmtree(body["id"])
             return
         self.logger.debug(f"Copied '{body['path']}' to '{copiedFile}'")
         try:
@@ -75,6 +76,7 @@ class Worker(ConsumerProducerMixin):
                 json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
             )
             os.chdir("../")
+            shutil.rmtree(body["id"])
             return
         try:
             self.logger.debug(f"Trying to move result from '{resultPath}' to '{body['path'] + 'qt'}'")
@@ -87,6 +89,7 @@ class Worker(ConsumerProducerMixin):
                 json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
             )
             os.chdir("../")
+            shutil.rmtree(body["id"])
             return
         self.logger.debug(f"Moved result from '{resultPath}' to '{body['path'] + 'qt'}'")
         os.remove(copiedFile)
@@ -108,7 +111,7 @@ class Worker(ConsumerProducerMixin):
             json.dumps(result), exchange="AsyncAPI.Models:DockingPrepResult", retry=True
         )
         os.chdir("../")
-        os.rmdir(body["id"])
+        shutil.rmtree(body["id"])
         message.ack()
 
 def setup_mq(host):
